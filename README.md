@@ -58,10 +58,9 @@ Legend: E=Enterprise, K=Klingon, B=Starbase, *=Star, .=Empty
 ## Technology Stack
 
 - **Platform**: Windows 11 with WSL Ubuntu 22.04
-- **Language**: Python 3.10.12
-- **Graphics**: pygame 2.6.1 (SDL 2.28.4)
+- **Language**: Python
+- **Graphics**: PyGame
 - **AI Framework**: Custom multi-agent system with decision trees
-- **Version Control**: Git with comprehensive branching strategy
 - **Testing**: pytest with coverage reporting
 - **Documentation**: Sphinx with automated API docs
 
@@ -95,13 +94,12 @@ Legend: E=Enterprise, K=Klingon, B=Starbase, *=Star, .=Empty
 - Windows 11 with WSL2 enabled
 - Ubuntu 22.04 LTS installed in WSL
 - Python 3.10.12 or higher
-- Git for version control
 
 ### Setup Instructions
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/yourusername/agentic-trek.git
+git clone https://github.com/carnegiej/agentic-trek.git
 cd agentic-trek
 ```
 
