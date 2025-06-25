@@ -1,0 +1,55 @@
+# Development Dependencies for Agentic Trek
+# Install with: pip install -r requirements-dev.txt
+
+# Testing Framework
+pytest==7.4.0
+pytest-cov==4.1.0
+pytest-mock==3.11.0
+pytest-benchmark==4.0.0
+pytest-xdist==3.3.1  # Parallel test execution
+
+# Code Quality and Formatting
+black==23.7.0
+flake8==6.0.0
+mypy==1.5.1
+isort==5.12.0
+bandit==1.7.5  # Security linting
+
+# Pre-commit Hooks
+pre-commit==3.3.0
+
+# Documentation
+sphinx==7.1.2
+sphinx-rtd-theme==1.3.0
+sphinx-autodoc-typehints==1.24.0
+
+# Development Tools
+tox==4.6.0  # Testing across multiple Python versions
+coverage==7.2.7  # Coverage reporting
+wheel==0.41.0  # Package building
+
+# Debugging and Profiling
+pdb-attach==3.2.0
+line-profiler==4.1.1
+memory-profiler==0.60.0
+
+# AI Development and Analysis
+matplotlib==3.7.2  # For AI behavior visualization
+seaborn==0.12.2  # Statistical plotting
+jupyter==1.0.0  # For AI analysis notebooks
+
+# Game Development Tools
+pygame-ce==2.3.2  # Community edition with additional features (alternative to pygame)
+
+# Linting Extensions
+flake8-docstrings==1.7.0
+flake8-import-order==0.18.2
+flake8-bugbear==23.7.10
+
+# Type Checking Extensions
+types-PyYAML==6.0.12.11
+types-colorama==0.4.15.12
+
+# Build and Distribution
+build==0.10.0
+twine==4.0.2
