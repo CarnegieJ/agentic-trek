@@ -8,7 +8,7 @@ for enhanced visual gameplay experience.
 import pygame
 import sys
 from typing import Dict, List, Optional, Any, Tuple
-from ..utils.logger import get_logger
+from src.utils.logger import get_logger
 
 
 class PygameInterface:

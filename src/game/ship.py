@@ -7,7 +7,7 @@ This module handles the Enterprise's systems, damage, and capabilities.
 import random
 from typing import Dict, Tuple, Set, Any
 from dataclasses import dataclass, asdict
-from ..utils.logger import get_logger
+from src.utils.logger import get_logger
 
 
 @dataclass

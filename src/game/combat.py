@@ -8,7 +8,7 @@ damage calculation, and battle resolution.
 import random
 import math
 from typing import Dict, List, Tuple, Any
-from ..utils.logger import get_logger
+from src.utils.logger import get_logger
 
 
 class CombatSystem:

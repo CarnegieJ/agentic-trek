@@ -9,7 +9,7 @@ import os
 import sys
 import time
 from typing import Dict, List, Optional, Any
-from ..utils.logger import get_logger
+from src.utils.logger import get_logger
 
 
 class ASCIIInterface:
@@ -175,8 +175,9 @@ class ASCIIInterface:
         print(self._colorize("=" * self.screen_width, 'cyan'))
         print()
         
-        print(f"STARDATE: {self._colorize(f'{status[\"stardate\"]:.1f}', 'white')}")
-        print(f"MISSION TIME LIMIT: {self._colorize(f'{status[\"time_remaining\"]:.1f}', 'yellow')} stardates")
+        stardate = status["stardate"]
+        print(f"STARDATE: {self._colorize(f'{stardate:.1f}', 'white')}")
+        print(f"MISSION TIME LIMIT: {self._colorize(f'{status['time_remaining']:.1f}', 'yellow')} stardates")
         print(f"KLINGONS TO DESTROY: {self._colorize(str(status['klingons_remaining']), 'red')}")
         print(f"STARBASES AVAILABLE: {self._colorize(str(status['starbases_remaining']), 'green')}")
         print()
@@ -185,7 +186,8 @@ class ASCIIInterface:
         print(f"  Energy: {self._colorize(str(status['energy']), 'green')}")
         print(f"  Shields: {self._colorize(str(status['shields']), 'blue')}")
         print(f"  Torpedoes: {self._colorize(str(status['torpedoes']), 'yellow')}")
-        print(f"  Current Quadrant: {self._colorize(f\"{status['quadrant'][0]},{status['quadrant'][1]}\", 'white')}")
+        quadrant = f"{status['quadrant'][0]},{status['quadrant'][1]}"
+        print(f"  Current Quadrant: {self._colorize(quadrant, 'white')}")
         print()
         
         print(self._colorize("Your mission: Destroy all Klingon ships before time runs out!", 'yellow'))

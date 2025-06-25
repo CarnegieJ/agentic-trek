@@ -16,9 +16,9 @@ from .galaxy import Galaxy
 from .ship import Ship
 from .combat import CombatSystem
 from .events import EventManager
-from ..ai.klingon_ai import KlingonAI
-from ..ai.strategic_ai import StrategicAI
-from ..utils.logger import get_logger
+from src.ai.klingon_ai import KlingonAI
+from src.ai.strategic_ai import StrategicAI
+from src.utils.logger import get_logger
 
 
 @dataclass

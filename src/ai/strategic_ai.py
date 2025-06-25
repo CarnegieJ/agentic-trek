@@ -7,7 +7,7 @@ gameplay through intelligent mission planning and tactical advice.
 
 import math
 from typing import Dict, List, Tuple, Any, Optional
-from ..utils.logger import get_logger
+from src.utils.logger import get_logger
 
 
 class StrategicAI:
