@@ -532,13 +532,24 @@ Fire photon torpedoes at specific targets.
 
 Usage: tor <course> <spread>
   course = Direction in degrees (0-360)
+    • 0° = North (up)
+    • 90° = East (right)  
+    • 180° = South (down)
+    • 270° = West (left)
   spread = Torpedo spread pattern (1-10)
+    • 1 = Tight, precise targeting
+    • 10 = Wide area coverage
 
 Examples:
-  tor 45 1   - Fire torpedo at 45 degrees, tight spread
-  tor 180 5  - Fire torpedo at 180 degrees, wide spread
+  tor 180 1  - Fire torpedo south with tight spread
+  tor 45 5   - Fire torpedo northeast with medium spread
+  tor 270 10 - Fire torpedo west with maximum spread
 
-Limited ammunition - use wisely!
+Features:
+  • High damage potential (can destroy enemies in one hit)
+  • Limited ammunition - use wisely!
+  • Spread increases hit probability but reduces precision
+  • Effectiveness reduced by torpedo tube damage
             """,
             'dam': """
 DAMAGE REPORT (dam)

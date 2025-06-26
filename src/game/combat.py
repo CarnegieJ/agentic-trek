@@ -293,15 +293,20 @@ class CombatSystem:
         x, y = start_pos
         trajectory = []
         
-        # Convert course to radians
-        course_rad = math.radians(course)
+        # Convert course to game coordinate system
+        # Game courses: 0° = North, 90° = East, 180° = South, 270° = West
+        # Math courses: 0° = East, 90° = North, 180° = West, 270° = South
+        # Convert: game_course = (90 - math_course) % 360
+        # So: math_course = (90 - game_course) % 360
+        math_course = (90 - course) % 360
+        course_rad = math.radians(math_course)
         
         # Calculate trajectory points
         max_range = int(self.torpedo_max_range)
         for distance in range(1, max_range + 1):
             # Base trajectory
             base_x = x + distance * math.cos(course_rad)
-            base_y = y + distance * math.sin(course_rad)
+            base_y = y - distance * math.sin(course_rad)  # Negative because Y increases downward
             
             # Add spread effect
             spread_radius = spread * 0.1 * distance  # Spread increases with distance
@@ -309,7 +314,7 @@ class CombatSystem:
             for spread_offset in range(-spread//2, spread//2 + 1):
                 spread_angle = course_rad + spread_offset * 0.1
                 spread_x = int(base_x + spread_radius * math.cos(spread_angle))
-                spread_y = int(base_y + spread_radius * math.sin(spread_angle))
+                spread_y = int(base_y - spread_radius * math.sin(spread_angle))  # Negative for Y
                 
                 # Check bounds
                 if 1 <= spread_x <= 8 and 1 <= spread_y <= 8:
