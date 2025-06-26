@@ -156,6 +156,118 @@ class Ship:
         return self.destroyed or self.energy <= 0
     
     def get_system_efficiency(self, system_name: str) -> float:
+        """
+        Get the efficiency of a ship system (0.0 to 1.0).
+        
+        Args:
+            system_name: Name of the system to check
+            
+        Returns:
+            Efficiency rating (1.0 = perfect, 0.0 = destroyed)
+        """
+        if hasattr(self.systems, system_name):
+            damage = getattr(self.systems, system_name)
+            return max(0.0, 1.0 - damage)
+        return 1.0  # Unknown systems assumed operational
+    
+    def move_within_quadrant(self, target_sector: Tuple[int, int]) -> Dict[str, Any]:
+        """
+        Move to a different sector within the current quadrant using impulse engines.
+        
+        Args:
+            target_sector: Target sector coordinates (1-8, 1-8)
+            
+        Returns:
+            Dict with success status and details
+        """
+        # Validate target coordinates
+        if not (1 <= target_sector[0] <= 8 and 1 <= target_sector[1] <= 8):
+            return {
+                "success": False,
+                "message": "Invalid sector coordinates. Must be between 1-8.",
+                "energy_used": 0
+            }
+        
+        # Check if already at target position
+        if self.quadrant_position == target_sector:
+            return {
+                "success": False,
+                "message": f"Already at sector {target_sector[0]},{target_sector[1]}.",
+                "energy_used": 0
+            }
+        
+        # Check impulse engine efficiency
+        impulse_efficiency = self.get_system_efficiency('impulse_engines')
+        if impulse_efficiency < 0.1:
+            return {
+                "success": False,
+                "message": "Impulse engines are too damaged for movement.",
+                "energy_used": 0
+            }
+        
+        # Calculate distance and energy cost
+        current_x, current_y = self.quadrant_position
+        target_x, target_y = target_sector
+        distance = ((target_x - current_x) ** 2 + (target_y - current_y) ** 2) ** 0.5
+        
+        # Base energy cost (10 energy per sector distance)
+        base_energy_cost = int(distance * 10)
+        
+        # Adjust for impulse engine efficiency
+        actual_energy_cost = int(base_energy_cost / impulse_efficiency)
+        
+        # Check if we have enough energy
+        if self.energy < actual_energy_cost:
+            return {
+                "success": False,
+                "message": f"Insufficient energy. Need {actual_energy_cost}, have {self.energy}.",
+                "energy_used": 0
+            }
+        
+        # Perform the movement
+        old_position = self.quadrant_position
+        self.quadrant_position = target_sector
+        self.energy -= actual_energy_cost
+        
+        # If we were docked, we're no longer docked after moving
+        if self.docked:
+            self.docked = False
+        
+        self.logger.info(f"Ship moved from sector {old_position} to {target_sector}, energy cost: {actual_energy_cost}")
+        
+        return {
+            "success": True,
+            "message": f"Moved from sector {old_position[0]},{old_position[1]} to {target_sector[0]},{target_sector[1]}.",
+            "energy_used": actual_energy_cost,
+            "distance": distance,
+            "impulse_efficiency": impulse_efficiency
+        }
+    
+    def get_sector_position(self) -> Tuple[int, int]:
+        """Get current sector position within quadrant."""
+        return self.quadrant_position
+    
+    def set_sector_position(self, sector: Tuple[int, int]):
+        """Set sector position within quadrant (for initialization)."""
+        if 1 <= sector[0] <= 8 and 1 <= sector[1] <= 8:
+            self.quadrant_position = sector
+            self.logger.info(f"Ship sector position set to {sector}")
+        else:
+            self.logger.warning(f"Invalid sector position: {sector}")
+    
+    def calculate_impulse_energy_cost(self, target_sector: Tuple[int, int]) -> int:
+        """Calculate energy cost for impulse movement to target sector."""
+        if self.quadrant_position == target_sector:
+            return 0
+        
+        current_x, current_y = self.quadrant_position
+        target_x, target_y = target_sector
+        distance = ((target_x - current_x) ** 2 + (target_y - current_y) ** 2) ** 0.5
+        
+        base_energy_cost = int(distance * 10)
+        impulse_efficiency = self.get_system_efficiency('impulse_engines')
+        
+        return int(base_energy_cost / max(impulse_efficiency, 0.1))
         """Get efficiency of a system (1.0 = perfect, 0.0 = destroyed)."""
         if hasattr(self.systems, system_name):
             damage = getattr(self.systems, system_name)

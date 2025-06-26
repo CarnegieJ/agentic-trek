@@ -154,6 +154,8 @@ class GameEngine:
             # Process the command
             if command.lower() == "nav":
                 result = self._handle_navigation(parameters)
+            elif command.lower() == "mov":
+                result = self._handle_impulse_movement(parameters)
             elif command.lower() == "srs":
                 result = self._handle_short_range_scan()
             elif command.lower() == "lrs":
@@ -240,6 +242,67 @@ class GameEngine:
             
         except ValueError:
             return {"success": False, "message": "Invalid quadrant coordinates"}
+    
+    def _handle_impulse_movement(self, parameters: List[str]) -> Dict[str, Any]:
+        """Handle impulse movement within current quadrant."""
+        if not parameters or len(parameters) < 1:
+            return {"success": False, "message": "Movement requires destination sector (e.g., 'mov 3,4')"}
+        
+        try:
+            # Parse coordinates
+            coords = parameters[0].split(',')
+            if len(coords) != 2:
+                return {"success": False, "message": "Invalid coordinates format. Use 'mov x,y'"}
+            
+            target_x = int(coords[0])
+            target_y = int(coords[1])
+            target_sector = (target_x, target_y)
+            
+            # Validate coordinates
+            if not (1 <= target_x <= 8 and 1 <= target_y <= 8):
+                return {"success": False, "message": "Sector coordinates must be between 1-8"}
+            
+            # Check for obstacles at target location
+            quadrant_data = self.galaxy.get_quadrant_data(self.ship.current_quadrant)
+            if self._is_sector_blocked(quadrant_data, target_sector):
+                return {"success": False, "message": f"Sector {target_x},{target_y} is blocked by an object"}
+            
+            # Attempt movement
+            movement_result = self.ship.move_within_quadrant(target_sector)
+            
+            if movement_result["success"]:
+                # Update stardate for movement
+                self.state.stardate += 0.1
+                
+                # Check for random events during movement
+                events = []
+                if random.random() < 0.1:  # 10% chance of minor event
+                    events.append("Sensors detect minor spatial disturbance during movement")
+                
+                return {
+                    "success": True,
+                    "message": movement_result["message"],
+                    "energy_used": movement_result["energy_used"],
+                    "events": events,
+                    "movement_data": {
+                        "distance": movement_result["distance"],
+                        "impulse_efficiency": movement_result["impulse_efficiency"]
+                    }
+                }
+            else:
+                return movement_result
+                
+        except ValueError:
+            return {"success": False, "message": "Invalid sector coordinates"}
+    
+    def _is_sector_blocked(self, quadrant_data: Dict, target_sector: Tuple[int, int]) -> bool:
+        """Check if a sector is blocked by objects."""
+        # Check if there's a star, Klingon, or starbase at the target location
+        for obj_type, positions in quadrant_data.items():
+            if obj_type in ['stars', 'klingons', 'starbases']:
+                if target_sector in positions:
+                    return True
+        return False
     
     def _handle_short_range_scan(self) -> Dict[str, Any]:
         """Handle short range sensor scan."""
@@ -547,6 +610,7 @@ class GameEngine:
             "time_remaining": self.state.mission_time_limit - self.state.stardate,
             "condition": self._get_ship_condition(),
             "quadrant": self.ship.current_quadrant,
+            "sector": self.ship.get_sector_position(),
             "energy": self.ship.energy,
             "shields": self.ship.shields,
             "torpedoes": self.ship.torpedoes,

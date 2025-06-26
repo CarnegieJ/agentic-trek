@@ -223,9 +223,14 @@ class ASCIIInterface:
             'RED': 'red'
         }.get(status['condition'], 'white')
         
+        # Get sector position if available
+        sector_info = ""
+        if 'sector' in status:
+            sector_info = f"    SECTOR: {status['sector'][0]},{status['sector'][1]}"
+        
         status_line = (f"STARDATE: {status['stardate']:.1f}    "
                       f"CONDITION: {self._colorize(status['condition'], condition_color)}    "
-                      f"QUADRANT: {status['quadrant'][0]},{status['quadrant'][1]}")
+                      f"QUADRANT: {status['quadrant'][0]},{status['quadrant'][1]}{sector_info}")
         
         energy_line = (f"ENERGY: {self._colorize(str(status['energy']), 'green')}        "
                       f"SHIELDS: {self._colorize(str(status['shields']), 'blue')}       "
@@ -255,6 +260,10 @@ class ASCIIInterface:
         if result['success']:
             if result['message']:
                 print(self._colorize(result['message'], 'green'))
+            
+            # Display movement data if present
+            if 'movement_data' in result:
+                self._display_movement_data(result)
             
             # Display scan data if present
             if 'scan_data' in result:
@@ -310,6 +319,25 @@ class ASCIIInterface:
             else:
                 print(f"{formatted_key}: {value}")
     
+    def _display_movement_data(self, result: Dict[str, Any]):
+        """Display movement-specific information."""
+        movement_data = result.get('movement_data', {})
+        energy_used = result.get('energy_used', 0)
+        
+        if movement_data:
+            print()
+            print(self._colorize("MOVEMENT DETAILS:", 'cyan'))
+            
+            distance = movement_data.get('distance', 0)
+            impulse_efficiency = movement_data.get('impulse_efficiency', 1.0)
+            
+            print(f"  Distance traveled: {self._colorize(f'{distance:.1f} sectors', 'white')}")
+            print(f"  Energy consumed: {self._colorize(str(energy_used), 'yellow')} units")
+            print(f"  Impulse efficiency: {self._colorize(f'{impulse_efficiency*100:.0f}%', 'green' if impulse_efficiency > 0.8 else 'yellow' if impulse_efficiency > 0.5 else 'red')}")
+            
+            if impulse_efficiency < 1.0:
+                print(f"  {self._colorize('Note: Damaged impulse engines increase energy cost', 'yellow')}")
+    
     def _display_damage_data(self, damage_data):
         """Display damage report."""
         print()
@@ -317,12 +345,51 @@ class ASCIIInterface:
         print(self._colorize("-" * 20, 'yellow'))
         
         if isinstance(damage_data, dict):
-            for system, damage in damage_data.items():
-                if damage > 0:
-                    color = 'red' if damage > 0.5 else 'yellow'
-                    print(f"{system}: {self._colorize(f'{damage:.1f}% damaged', color)}")
-                else:
-                    print(f"{system}: {self._colorize('Operational', 'green')}")
+            # Handle the new nested structure
+            if 'systems' in damage_data:
+                systems = damage_data['systems']
+                overall_condition = damage_data.get('overall_condition', 'UNKNOWN')
+                repair_priority = damage_data.get('repair_priority', [])
+                
+                print(f"Overall Condition: {self._colorize(overall_condition, 'green' if overall_condition == 'EXCELLENT' else 'yellow' if overall_condition == 'GOOD' else 'red')}")
+                print()
+                
+                print(self._colorize("SYSTEM STATUS:", 'cyan'))
+                for system_name, system_info in systems.items():
+                    if isinstance(system_info, dict):
+                        damage_level = system_info.get('damage_level', 0)
+                        status = system_info.get('status', 'Unknown')
+                        efficiency = system_info.get('efficiency', 1.0)
+                        
+                        if damage_level > 0:
+                            color = 'red' if damage_level > 0.5 else 'yellow'
+                            print(f"  {system_name}: {self._colorize(status, color)} ({efficiency*100:.0f}% efficiency)")
+                        else:
+                            print(f"  {system_name}: {self._colorize(status, 'green')} ({efficiency*100:.0f}% efficiency)")
+                    else:
+                        # Fallback for simple damage values
+                        if system_info > 0:
+                            color = 'red' if system_info > 0.5 else 'yellow'
+                            print(f"  {system_name}: {self._colorize(f'{system_info:.1f}% damaged', color)}")
+                        else:
+                            print(f"  {system_name}: {self._colorize('Operational', 'green')}")
+                
+                if repair_priority:
+                    print()
+                    print(self._colorize("REPAIR PRIORITY:", 'yellow'))
+                    for i, system in enumerate(repair_priority[:3], 1):  # Show top 3
+                        print(f"  {i}. {system}")
+            else:
+                # Handle old simple structure
+                for system, damage in damage_data.items():
+                    if isinstance(damage, (int, float)):
+                        if damage > 0:
+                            color = 'red' if damage > 0.5 else 'yellow'
+                            print(f"  {system}: {self._colorize(f'{damage:.1f}% damaged', color)}")
+                        else:
+                            print(f"  {system}: {self._colorize('Operational', 'green')}")
+                    else:
+                        print(f"  {system}: {damage}")
         else:
             print(damage_data)
     
@@ -342,6 +409,7 @@ class ASCIIInterface:
 
 {self._colorize('NAVIGATION COMMANDS:', 'yellow')}
   nav <x,y>     - Navigate to quadrant x,y (e.g., "nav 3,4")
+  mov <x,y>     - Move to sector x,y within current quadrant (impulse engines)
   
 {self._colorize('SENSOR COMMANDS:', 'yellow')}
   srs           - Short range sensors (scan current quadrant)
@@ -369,9 +437,11 @@ class ASCIIInterface:
 
 {self._colorize('EXAMPLES:', 'green')}
   nav 2,3       - Navigate to quadrant 2,3
+  mov 4,5       - Move to sector 4,5 within current quadrant
   pha 500       - Fire phasers with 500 energy units
   tor 45 3      - Fire torpedo at 45 degrees with spread of 3
   shi 1000      - Raise shields to 1000 units
+  dam           - Display comprehensive damage report
   com distance 4,5 - Calculate distance to quadrant 4,5
 
 {self._colorize('Type "help <command>" for detailed information about a specific command.', 'cyan')}
@@ -391,6 +461,32 @@ Usage: nav <x,y>
 Examples:
   nav 3,4    - Navigate to quadrant 3,4
   nav 1,1    - Navigate to quadrant 1,1
+
+Energy cost depends on distance traveled.
+            """,
+            'mov': """
+IMPULSE MOVEMENT (mov)
+Move to a different sector within the current quadrant using impulse engines.
+
+Usage: mov <x,y>
+  x,y = Sector coordinates within quadrant (1-8)
+
+Examples:
+  mov 3,4    - Move to sector 3,4 in current quadrant
+  mov 1,1    - Move to sector 1,1 in current quadrant
+
+Features:
+  • Uses impulse engines (affected by damage)
+  • Lower energy cost than warp navigation
+  • Allows tactical positioning within quadrant
+  • Cannot move to sectors occupied by objects
+  • Energy cost based on distance and impulse efficiency
+
+Tactical advantages:
+  • Position for optimal combat range
+  • Approach starbases for docking
+  • Avoid dangerous areas within quadrant
+  • Strategic positioning relative to enemies
 
 Energy cost depends on distance traveled.
             """,
@@ -443,6 +539,77 @@ Examples:
   tor 180 5  - Fire torpedo at 180 degrees, wide spread
 
 Limited ammunition - use wisely!
+            """,
+            'dam': """
+DAMAGE REPORT (dam)
+Display comprehensive damage assessment of all ship systems.
+
+Usage: dam
+
+Shows:
+  • Overall ship condition (EXCELLENT, GOOD, FAIR, POOR, CRITICAL)
+  • Individual system status and efficiency ratings
+  • Repair priority recommendations
+  • Color-coded damage levels:
+    - Green: Operational (100% efficiency)
+    - Yellow: Minor to moderate damage (reduced efficiency)
+    - Red: Major to critical damage (severely reduced efficiency)
+
+Systems monitored:
+  • Warp Engines - Required for long-distance travel
+  • Impulse Engines - Required for sub-light movement
+  • Phasers - Primary weapon systems
+  • Torpedo Tubes - Photon torpedo launch systems
+  • Shields - Defensive protection systems
+  • Sensors - Short and long range detection
+  • Computer - Navigation and tactical systems
+  • Life Support - Essential crew survival systems
+
+Use this command regularly to monitor ship health and plan repairs.
+            """,
+            'shi': """
+SHIELDS (shi)
+Raise or lower defensive shields.
+
+Usage: shi <energy_amount>
+  energy_amount = Energy to allocate to shields (0-1500)
+
+Examples:
+  shi 1000   - Set shields to 1000 energy
+  shi 0      - Lower shields completely
+
+Shields protect against enemy fire but consume energy.
+            """,
+            'dock': """
+DOCK (dock)
+Dock with a starbase for repairs and resupply.
+
+Usage: dock
+
+Requirements:
+  • Must be in same quadrant as a starbase
+  • Must be adjacent to the starbase
+
+Benefits:
+  • Full energy restoration
+  • Shield recharge
+  • Torpedo resupply
+  • Complete system repairs
+            """,
+            'com': """
+COMPUTER (com)
+Access ship's computer for calculations and information.
+
+Usage: com <function> [parameters]
+
+Functions:
+  distance <x,y>  - Calculate distance to quadrant
+  course <x,y>    - Calculate course to quadrant
+  status          - Computer status report
+
+Examples:
+  com distance 4,5  - Distance to quadrant 4,5
+  com course 2,3    - Course to quadrant 2,3
             """
         }
         
