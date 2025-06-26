@@ -132,9 +132,9 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. **Run the game**:
+4. **Run the ASCII game**:
 ```bash
-python src/main.py
+python run_game.py --ascii
 ```
 
 ## Game Controls
