@@ -8,7 +8,7 @@ story generation to enhance gameplay experience.
 import random
 from typing import Dict, List, Any, Optional
 from enum import Enum
-from src.utils.logger import get_logger
+from utils.logger import get_logger
 
 
 class EventType(Enum):

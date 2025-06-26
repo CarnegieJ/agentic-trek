@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from game.engine import GameEngine
 from ui.ascii_interface import ASCIIInterface
-from ui.pygame_interface import PygameInterface
+# pygame_interface imported conditionally to avoid import errors
 from utils.config import Config
 from utils.logger import setup_logger
 
@@ -88,7 +88,7 @@ def display_banner():
     ║                    AGENTIC TREK                              ║
     ║                                                              ║
     ║    A Modern Recreation of the Classic Space Strategy Game    ║
-    ║              Enhanced with Intelligent AI Agents            ║
+    ║              Enhanced with Intelligent AI Agents             ║
     ║                                                              ║
     ║                     "Live Long and Prosper"                  ║
     ╚══════════════════════════════════════════════════════════════╝
@@ -158,9 +158,10 @@ def main():
             logger.info("Starting pygame interface...")
             try:
                 import pygame
+                from ui.pygame_interface import PygameInterface
                 interface = PygameInterface(game_engine)
-            except ImportError:
-                logger.warning("pygame not available, falling back to ASCII interface")
+            except ImportError as e:
+                logger.warning(f"pygame not available ({e}), falling back to ASCII interface")
                 interface = ASCIIInterface(game_engine)
         
         # Start the game
@@ -181,7 +182,11 @@ def main():
     
     finally:
         # Cleanup
-        logger.info("Performing cleanup...")
+        try:
+            logger.info("Performing cleanup...")
+        except NameError:
+            # Logger not initialized yet
+            pass
         # Any cleanup code would go here
 
 

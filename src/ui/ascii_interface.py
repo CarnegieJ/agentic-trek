@@ -9,7 +9,7 @@ import os
 import sys
 import time
 from typing import Dict, List, Optional, Any
-from src.utils.logger import get_logger
+from utils.logger import get_logger
 
 
 class ASCIIInterface:
@@ -134,6 +134,17 @@ class ASCIIInterface:
         """Display welcome message and game banner."""
         self._clear_screen()
         
+        # Define strings with backslashes outside f-string
+        ship_line1 = "                      _.-'   '-._"
+        ship_line2 = "                   .-'           '-."
+        ship_line3 = "                  /                 \\"
+        ship_line4 = "                 |    ___     ___    |"
+        ship_line5 = "                 |   (   )   (   )   |"
+        ship_line6 = "                  \\   '-'     '-'   /"
+        ship_line7 = "                   '-.             .-'"
+        ship_line8 = "                      '-._     _.-'"
+        ship_line9 = "                          '---'"
+        
         banner = f"""
 {self._colorize('╔══════════════════════════════════════════════════════════════╗', 'cyan')}
 {self._colorize('║                    AGENTIC TREK                              ║', 'cyan')}
@@ -150,20 +161,24 @@ class ASCIIInterface:
 {self._colorize('         .        *                                    .', 'white')}
 {self._colorize('                      USS ENTERPRISE NCC-1701', 'green')}
 {self._colorize('                           ___', 'green')}
-{self._colorize('                      _.-\'   \'-._', 'green')}
-{self._colorize('                   .-\'           \'-. ', 'green')}
-{self._colorize('                  /                 \\\\', 'green')}
-{self._colorize('                 |    ___     ___    |', 'green')}
-{self._colorize('                 |   (   )   (   )   |', 'green')}
-{self._colorize('                  \\\\   \'-\'     \'-\'   /', 'green')}
-{self._colorize('                   \'-.             .-\'', 'green')}
-{self._colorize('                      \'-._     _.-\'', 'green')}
-{self._colorize('                          \'---\'', 'green')}
+{self._colorize(ship_line1, 'green')}
+{self._colorize(ship_line2, 'green')}
+{self._colorize(ship_line3, 'green')}
+{self._colorize(ship_line4, 'green')}
+{self._colorize(ship_line5, 'green')}
+{self._colorize(ship_line6, 'green')}
+{self._colorize(ship_line7, 'green')}
+{self._colorize(ship_line8, 'green')}
+{self._colorize(ship_line9, 'green')}
 
 {self._colorize('Type "help" for commands or "quit" to exit.', 'yellow')}
         """
         print(banner)
-        input(self._colorize("Press Enter to begin your mission...", 'cyan'))
+        try:
+            input(self._colorize("Press Enter to begin your mission...", 'cyan'))
+        except (EOFError, KeyboardInterrupt):
+            # Handle EOF or Ctrl+C gracefully
+            print("\n" + self._colorize("Starting mission...", 'cyan'))
     
     def _display_initial_status(self):
         """Display initial game status."""
@@ -176,10 +191,14 @@ class ASCIIInterface:
         print()
         
         stardate = status["stardate"]
+        time_remaining = status["time_remaining"]
+        klingons_remaining = status["klingons_remaining"]
+        starbases_remaining = status["starbases_remaining"]
+        
         print(f"STARDATE: {self._colorize(f'{stardate:.1f}', 'white')}")
-        print(f"MISSION TIME LIMIT: {self._colorize(f'{status['time_remaining']:.1f}', 'yellow')} stardates")
-        print(f"KLINGONS TO DESTROY: {self._colorize(str(status['klingons_remaining']), 'red')}")
-        print(f"STARBASES AVAILABLE: {self._colorize(str(status['starbases_remaining']), 'green')}")
+        print(f"MISSION TIME LIMIT: {self._colorize(f'{time_remaining:.1f}', 'yellow')} stardates")
+        print(f"KLINGONS TO DESTROY: {self._colorize(str(klingons_remaining), 'red')}")
+        print(f"STARBASES AVAILABLE: {self._colorize(str(starbases_remaining), 'green')}")
         print()
         
         print(self._colorize("SHIP STATUS:", 'bold'))
@@ -217,7 +236,17 @@ class ASCIIInterface:
         print()
         
         prompt = self._colorize("COMMAND: ", 'cyan')
-        return input(prompt)
+        
+        try:
+            return input(prompt)
+        except EOFError:
+            # Handle EOF gracefully (Ctrl+D or piped input ending)
+            print("\n" + self._colorize("EOF detected. Exiting game...", 'yellow'))
+            return "quit"
+        except KeyboardInterrupt:
+            # Handle Ctrl+C gracefully
+            print("\n" + self._colorize("Game interrupted. Exiting...", 'yellow'))
+            return "quit"
     
     def _display_command_result(self, result: Dict[str, Any]):
         """Display the result of a command."""
@@ -525,8 +554,13 @@ Limited ammunition - use wisely!
     
     def _confirm_quit(self) -> bool:
         """Confirm quit with user."""
-        response = input(self._colorize("Are you sure you want to quit? (y/N): ", 'yellow'))
-        return response.lower().startswith('y')
+        try:
+            response = input(self._colorize("Are you sure you want to quit? (y/N): ", 'yellow'))
+            return response.lower().startswith('y')
+        except (EOFError, KeyboardInterrupt):
+            # If EOF or interrupt, assume they want to quit
+            print("\n" + self._colorize("Confirming quit...", 'yellow'))
+            return True
     
     def _display_game_end(self):
         """Display game end message."""
