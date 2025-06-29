@@ -268,3 +268,56 @@ For questions, suggestions, or bug reports, please open an issue on GitHub.
 
 ---
 *"Space: the final frontier. These are the voyages of the starship Enterprise..."*
+
+## 🚀 Recent Updates - Enhanced ASCII Mode Commands
+
+### New Movement System
+- **`mov <x,y>`** - **NEW!** Impulse engine movement within quadrants for tactical positioning
+  - Example: `mov 4,5` moves to sector 4,5 within current quadrant
+  - Uses impulse engines (lower energy cost than warp)
+  - Allows precise positioning for combat and docking
+
+### Enhanced Combat System
+- **Fixed Torpedo Targeting** - Torpedoes now accurately hit targets with proper trajectory calculation
+- **Course Directions Clarified**:
+  - 0° = North (up)
+  - 90° = East (right)  
+  - 180° = South (down)
+  - 270° = West (left)
+- **Spread System**: 1=tight precision, 10=wide area coverage
+
+### Comprehensive Help System
+- **`help <command>`** - Get detailed help for any command
+  - Example: `help tor` shows complete torpedo usage guide
+  - Example: `help mov` explains impulse movement system
+- **Enhanced Documentation** - Every command now has comprehensive help
+
+### Improved Status Display
+- **Dual Coordinates** - Shows both quadrant (8x8 galaxy) and sector (8x8 within quadrant)
+- **Example**: `QUADRANT: 2,4    SECTOR: 4,7`
+- **Enhanced Damage Reports** - Detailed system status with efficiency ratings
+
+### Command Examples with New Features
+```bash
+# Two-tier movement system
+nav 2,4           # Warp to quadrant 2,4
+mov 4,7           # Move to sector 4,7 for tactical positioning
+tor 90 1          # Fire torpedo east with tight spread
+
+# Enhanced help system
+help              # Show all commands
+help mov          # Detailed impulse movement help
+help tor          # Complete torpedo usage guide
+
+# Comprehensive damage system
+dam               # Show detailed damage report with efficiency ratings
+```
+
+### Tactical Advantages
+- **Strategic Positioning** - Use `mov` for optimal combat range and starbase approach
+- **Energy Efficiency** - Impulse movement costs less energy than warp navigation
+- **Combat Precision** - Position precisely before firing torpedoes for maximum accuracy
+- **Enhanced Gameplay** - Two-tier movement adds tactical depth to space combat
+
+---
+*All systems operational, Captain! The Enterprise is ready for enhanced tactical operations.* 🖖
