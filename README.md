@@ -106,12 +106,16 @@ We plan to add more content and even add retro sound effects and scoring logic t
 └───────────────────────────────────────────┴───────────────────┘
 ```
 
-## Installation
+## Recommended Development Environment
 
-### Prerequisites
+### Tech Stck
 - Windows 11 with WSL2 enabled
+- Windows Terminal
 - Ubuntu 22.04 LTS installed in WSL
 - Python 3.10.12 or higher
+- GitHub CLI
+- Amazon Q CLI
+- Your favorite text editor
 
 ### Setup Instructions
 
@@ -123,7 +127,7 @@ cd agentic-trek
 
 2. **Create virtual environment**:
 ```bash
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 ```
 
@@ -141,6 +145,7 @@ python run_game.py --ascii
 
 ### ASCII Mode Commands
 - `nav <quadrant>` - Navigate to specified quadrant (e.g., "nav 3,4")
+- `mov <sector>` - Navigate to specified sector (e.g., "mov 3,4")
 - `srs` - Short range sensors (local quadrant scan)
 - `lrs` - Long range sensors (adjacent quadrant scan)
 - `pha <amount>` - Fire phasers with specified energy
